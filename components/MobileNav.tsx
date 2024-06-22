@@ -3,29 +3,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { CiMenuFries } from "react-icons/ci";
+import { mobileNavLinks } from "@/lib/data";
 
-const links = [
-  {
-    name: "home",
-    path: "/"
-  },
-  {
-    name: "services",
-    path: "/services"
-  },
-  {
-    name: "resume",
-    path: "/resume"
-  },
-  {
-    name: "work",
-    path: "/work"
-  },
-  {
-    name: "contact",
-    path: "/contact"
-  }
-]
 
 const MobileNav = () => {
   const pathname = usePathname();
@@ -45,7 +24,7 @@ const MobileNav = () => {
         </div>
         {/* nav */}
         <nav className="flex flex-col justify-center items-center gap-8">
-          {links.map((link, i) => {
+          {mobileNavLinks.map((link, i) => {
             return (
               <Link 
                 key={i} 
