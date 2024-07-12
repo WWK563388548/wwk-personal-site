@@ -17,7 +17,7 @@ const stats = [
   },
   {
     num: 1000,
-    text: "code commits per year, at least"
+    text: "commits/year, at least"
   },
 ]
 
