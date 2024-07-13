@@ -9,51 +9,7 @@ import { BsArrowUpRight, BsGithub } from "react-icons/bs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import "swiper/css";
 import WorkSliderBtns from "@/components/WorkSliderBtns";
-
-const projects = [
-  {
-    num: "01",
-    category: "frontend",
-    title: "project 1",
-    description: "xxxxxxxxx",
-    stack: [
-      {name: "Next.js"},
-      {name: "Typescript"},
-      {name: "Node.js"}
-    ],
-    image: "/",
-    live: "",
-    github: "",
-  },
-  {
-    num: "02",
-    category: "fullstack",
-    title: "project 2",
-    description: "xxxxxxxxx",
-    stack: [
-      {name: "Next.js"},
-      {name: "Typescript"},
-      {name: "Node.js"}
-    ],
-    image: "/",
-    live: "",
-    github: "",
-  },
-  {
-    num: "03",
-    category: "fullstack",
-    title: "project 3",
-    description: "xxxxxxxxx",
-    stack: [
-      {name: "Next.js"},
-      {name: "Typescript"},
-      {name: "Node.js"}
-    ],
-    image: "/",
-    live: "",
-    github: "",
-  },
-];
+import { projects } from "@/lib/data";
 
 const Work = () => {
   const [project, setProject] = useState(projects[0]);
