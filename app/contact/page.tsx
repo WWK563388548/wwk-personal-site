@@ -143,10 +143,10 @@ const Contact: React.FC = () => {
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Select what you want</SelectLabel>
-                      <SelectItem value="wdo">Web development outsourcing</SelectItem>
-                      <SelectItem value="pjr">Part-time job invitation</SelectItem>
-                      <SelectItem value="rii">Recruitment/Interview invitation</SelectItem>
-                      <SelectItem value="git">Get in touch</SelectItem>
+                      <SelectItem value="Web development outsourcing">Web development outsourcing</SelectItem>
+                      <SelectItem value="Part-time job invitation">Part-time job invitation</SelectItem>
+                      <SelectItem value="Recruitment/Interview invitation">Recruitment/Interview invitation</SelectItem>
+                      <SelectItem value="Get in touch">Get in touch</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

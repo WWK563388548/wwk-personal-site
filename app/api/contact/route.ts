@@ -5,7 +5,6 @@ import emailjs from '@emailjs/nodejs';
 export async function POST(request: Request) {
   const body = await request.json();
   const { firstName, lastName, email, subject, message, recaptchaToken } = body;
-  console.warn("debug: ", recaptchaToken)
   // Verify reCAPTCHA
   const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'POST',
@@ -16,7 +15,6 @@ export async function POST(request: Request) {
   });
 
   const recaptchaData = await recaptchaResponse.json();
-  console.log("debug: ", JSON.stringify(recaptchaData))
   if (!recaptchaData.success) {
     return NextResponse.json({ error: 'reCAPTCHA verification failed' }, { status: 400 });
   }
