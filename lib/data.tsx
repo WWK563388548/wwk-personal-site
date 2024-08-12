@@ -8,6 +8,9 @@ import {
   FaDocker,
   FaGithub, 
   FaLinkedinIn,
+  FaPhoneAlt,
+  FaEnvelope,
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 
 import {
@@ -239,3 +242,21 @@ export const projects = [
     github: "",
   },
 ];
+
+export const contactData = [
+  {
+    icon: <FaPhoneAlt />,
+    title: 'Phone',
+    description: "(+81) 080 2379 9945"
+  },
+  {
+    icon: <FaEnvelope />,
+    title: 'Email',
+    description: "wc563388548@gmail.com"
+  },
+  {
+    icon: <FaMapMarkerAlt />,
+    title: 'Address',
+    description: "Tokyo, Japan"
+  }
+]
