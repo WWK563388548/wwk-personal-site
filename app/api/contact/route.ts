@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   });
 
   const recaptchaData = await recaptchaResponse.json();
-
+  console.log("debug: ", JSON.stringify(recaptchaData))
   if (!recaptchaData.success) {
     return NextResponse.json({ error: 'reCAPTCHA verification failed' }, { status: 400 });
   }
