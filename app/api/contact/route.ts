@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+// @ts-ignore
 import emailjs from '@emailjs/nodejs';
 
 export async function POST(request: Request) {
