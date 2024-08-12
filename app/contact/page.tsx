@@ -77,7 +77,7 @@ const Contact: React.FC = () => {
         },
         body: JSON.stringify({
           ...data,
-          // recaptchaToken: token,
+          recaptchaToken: token,
         }),
       });
 
