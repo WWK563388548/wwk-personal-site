@@ -6,6 +6,10 @@ Here is my personal website! This site is built using modern front-end technolog
 - Framer Motion
 - Tailwind CSS
 - Radix UI
+- react-hook-form
+- email.js
+- google reCaptcha
+
 I hope you enjoy the website and welcome any feedback or suggestions!
 
 | PC       | Mobile   |
