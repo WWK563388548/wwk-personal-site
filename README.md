@@ -2,6 +2,8 @@
 
 A modern, responsive personal website with a clean design that showcases your work and contact information.
 
+**README in other languages:** [English](README.md) | [日本語](README.ja.md) | [中文](README.zh.md)
+
 ## 📸 Screenshots
 
 | Desktop | Mobile |
