@@ -146,7 +146,8 @@ jobs:
               title: `Claude Code changes for issue #${issueNumber}`,
               body: prBody,
               head: '${{ steps.branch.outputs.branch_name }}',
-              base: 'develop'
+              // 默认使用main分支
+              base: 'main'
             });
 
             // 在issue上添加评论，链接到PR
