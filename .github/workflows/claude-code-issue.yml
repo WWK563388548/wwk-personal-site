@@ -79,14 +79,30 @@ jobs:
           # 提取issue内容作为提示
           ISSUE_BODY="${{ steps.issue.outputs.body }}"
 
-          # 运行Claude Code并要求生成总结
-          claude -p "$ISSUE_BODY
+          # 运行Claude Code并要求生成总结，同时捕获错误输出
+          ERROR_FILE="claude_error.txt"
+          if ! claude -p "$ISSUE_BODY
 
           After making the changes, please provide a summary of what you did in the following format:
 
           ---SUMMARY---
           [Your summary of changes here, including what files were modified and what changes were made]
-          ---END SUMMARY---" --allowedTools "Bash(git diff:*)" "Bash(git log:*)" Edit > claude_output.txt
+          ---END SUMMARY---" --allowedTools "Bash(git diff:*)" "Bash(git log:*)" Edit > claude_output.txt 2>$ERROR_FILE; then
+            # 检查是否是速率限制错误
+            if grep -q "rate_limit_error" $ERROR_FILE; then
+              echo "::error::Claude API rate limit exceeded. Please try again later."
+              cat $ERROR_FILE
+              exit 1
+            elif grep -q "API Error" $ERROR_FILE; then
+              echo "::error::Claude API error occurred:"
+              cat $ERROR_FILE
+              exit 1
+            else
+              echo "::error::Unknown error occurred while running Claude Code:"
+              cat $ERROR_FILE
+              exit 1
+            fi
+          fi
 
           # 检查是否有更改
           if [[ -n $(git status --porcelain) ]]; then
@@ -140,25 +156,34 @@ jobs:
               repo: context.repo.repo,
               issue_number: issueNumber
             });
+            
+            // 预先定义PR标题，以便进行比较
+            const expectedPrTitle = `Claude Code changes for issue #${issueNumber}`;
 
-            // 检查是否已经存在处理此issue的PR
-            const { data: prs } = await github.rest.pulls.list({
+            // 查找所有开放的PR
+            const { data: allPrs } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
-              head: '${{ steps.branch.outputs.branch_name }}'
+              state: 'open'
             });
+            
+            // 查找处理同一issue的PR（通过标题匹配）
+            const existingPrs = allPrs.filter(pr => 
+              pr.title === expectedPrTitle && 
+              pr.body && 
+              pr.body.includes(`issue #${issueNumber}`)
+            );
 
-            // 如果已存在从该分支创建的PR，则不再创建新PR
-            if (prs.length > 0) {
-              console.log(`PR already exists: ${prs[0].html_url}`);
+            // 如果已存在处理此issue的PR，则不再创建新PR
+            if (existingPrs.length > 0) {
+              console.log(`PR for issue #${issueNumber} already exists: ${existingPrs[0].html_url}`);
               
               // 在issue上添加评论，链接到已有PR
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body: `✅ 已存在处理此问题的PR #${prs[0].number}: ${prs[0].html_url}`
+                body: `✅ 已存在处理此问题的PR #${existingPrs[0].number}: ${existingPrs[0].html_url}`
               });
               
               return;
@@ -187,7 +212,7 @@ jobs:
             const { data: pr } = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Claude Code changes for issue #${issueNumber}`,
+              title: expectedPrTitle,
               body: prBody,
               head: '${{ steps.branch.outputs.branch_name }}',
               // 默认使用develop分支
