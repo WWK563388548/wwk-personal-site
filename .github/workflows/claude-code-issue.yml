@@ -51,8 +51,21 @@ jobs:
       - name: Create branch for changes
         id: branch
         run: |
-          BRANCH_NAME="claude-code/issue-${{ github.event.issue.number }}"
-          git checkout -b $BRANCH_NAME
+          # 生成唯一分支名（添加时间戳）
+          TIMESTAMP=$(date +%s)
+          BRANCH_NAME="claude-code/issue-${{ github.event.issue.number }}-$TIMESTAMP"
+          
+          # 检查远程分支是否存在
+          if git ls-remote --heads origin $BRANCH_NAME | grep -q $BRANCH_NAME; then
+            # 如果分支已存在，先拉取它
+            git fetch origin $BRANCH_NAME
+            git checkout $BRANCH_NAME
+            git pull origin $BRANCH_NAME
+          else
+            # 如果分支不存在，创建新的
+            git checkout -b $BRANCH_NAME
+          fi
+          
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       # 运行Claude Code (使用Anthropic API而非Bedrock)
@@ -99,11 +112,19 @@ jobs:
         run: |
           git config --global user.name "Claude Code Bot"
           git config --global user.email "claude-code-bot@example.com"
-          git add .
-          git commit -m "Changes from issue #${{ github.event.issue.number }}: ${{ steps.issue.outputs.title }}"
-
+          
+          # 检查是否有更改需要提交
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git commit -m "Changes from issue #${{ github.event.issue.number }}: ${{ steps.issue.outputs.title }}"
+          fi
+          
+          # 尝试拉取远程更改
+          git pull --rebase origin ${{ steps.branch.outputs.branch_name }} || true
+          
+          # 推送时增加 --force-with-lease 选项，安全地处理冲突
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git push origin ${{ steps.branch.outputs.branch_name }}
+          git push --force-with-lease origin ${{ steps.branch.outputs.branch_name }}
 
       # 创建PR
       - name: Create Pull Request
@@ -146,7 +167,7 @@ jobs:
               title: `Claude Code changes for issue #${issueNumber}`,
               body: prBody,
               head: '${{ steps.branch.outputs.branch_name }}',
-              // 默认使用main分支
+              // 默认使用develop分支
               base: 'main'
             });
 
