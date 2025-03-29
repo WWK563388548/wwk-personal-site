@@ -1,0 +1,3 @@
+---SUMMARY---
+Added a file structure diagram to the README.md file. Created a new "Project Structure" section between the Introduction and "How to run this repo" sections. The diagram shows the organization of the project in an easy-to-read tree format with comments explaining the purpose of each file and directory.
+---END SUMMARY---
