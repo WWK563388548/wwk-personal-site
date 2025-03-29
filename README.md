@@ -32,4 +32,43 @@ npm run dev
 pnpm run dev
 ```
 
+### Project Structure
+```
+- app/
+  - about/          # About page
+  - api/
+    - contact/      # Contact API endpoint
+  - contact/        # Contact page
+  - work/           # Work page
+  - layout.tsx      # Root layout
+  - page.tsx        # Home page
+- components/
+  - Header.tsx      # Site header component
+  - MobileNav.tsx   # Mobile navigation component
+  - Nav.tsx         # Main navigation component
+  - PageTransition.tsx
+  - Photo.tsx
+  - Social.tsx
+  - StairTransition.tsx
+  - Stairs.tsx
+  - Stats.tsx
+  - WorkSliderBtns.tsx
+  - ui/             # UI components
+    - button.tsx
+    - input.tsx
+    - scroll-area.tsx
+    - select.tsx
+    - sheet.tsx
+    - tabs.tsx
+    - textarea.tsx
+    - tooltip.tsx
+- lib/
+  - data.tsx        # Site data and content
+  - utils.ts        # Utility functions
+- public/
+  - assets/         # Static assets
+    - icons/
+    - photo.png
+```
+
 
