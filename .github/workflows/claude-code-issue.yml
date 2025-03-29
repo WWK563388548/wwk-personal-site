@@ -73,7 +73,7 @@ jobs:
         id: claude-code
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: "claude-3-7-sonnet-20250219-v1"
+          ANTHROPIC_MODEL: "claude-3-7-sonnet-20250219"
           DISABLE_PROMPT_CACHING: "1"
         run: |
           # 提取issue内容作为提示
@@ -126,7 +126,7 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push --force-with-lease origin ${{ steps.branch.outputs.branch_name }}
 
-      # 创建PR
+      # 在创建PR前先检查是否已存在
       - name: Create Pull Request
         uses: actions/github-script@v6
         with:
@@ -140,6 +140,29 @@ jobs:
               repo: context.repo.repo,
               issue_number: issueNumber
             });
+
+            // 检查是否已经存在处理此issue的PR
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: '${{ steps.branch.outputs.branch_name }}'
+            });
+
+            // 如果已存在从该分支创建的PR，则不再创建新PR
+            if (prs.length > 0) {
+              console.log(`PR already exists: ${prs[0].html_url}`);
+              
+              // 在issue上添加评论，链接到已有PR
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `✅ 已存在处理此问题的PR #${prs[0].number}: ${prs[0].html_url}`
+              });
+              
+              return;
+            }
 
             // 创建详细的PR描述，包含Claude的总结
             const prBody = `
