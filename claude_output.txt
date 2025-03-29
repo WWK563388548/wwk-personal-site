@@ -1,0 +1,7 @@
+---SUMMARY---
+Modified the README.md file to add a new "Project Structure" section that provides a clear overview of the project's file organization. The structure shows the main directories and files with brief descriptions of their purposes, including:
+- app/ directory with its pages and routes
+- components/ directory with UI components
+- lib/ directory with data and utility files
+- public/ directory with static assets
+---END SUMMARY---
