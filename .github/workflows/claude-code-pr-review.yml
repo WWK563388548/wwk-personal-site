@@ -1,0 +1,121 @@
+name: Claude Code PR Review Handler
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  process-review:
+    runs-on: ubuntu-latest
+    # 只处理PR中以"Review:"开头的评论
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, 'Review:')
+
+    steps:
+      # 检出代码库
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # 设置Node.js环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 安装Claude Code CLI
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      # 获取PR详情
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const prNumber = context.payload.issue.number;
+            const commentId = context.payload.comment.id;
+            const reviewFeedback = context.payload.comment.body.substring(7).trim(); // 移除"Review:"前缀
+
+            // 获取PR详情
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            core.setOutput('number', prNumber);
+            core.setOutput('commentId', commentId);
+            core.setOutput('feedback', reviewFeedback);
+            core.setOutput('headRef', pr.head.ref);
+            core.setOutput('headSha', pr.head.sha);
+
+      # 检出PR分支
+      - name: Checkout PR branch
+        run: |
+          git fetch origin ${{ steps.pr.outputs.headRef }}
+          git checkout ${{ steps.pr.outputs.headRef }}
+
+      # 运行Claude Code处理反馈 (使用Anthropic API而非Bedrock)
+      - name: Run Claude Code with review feedback
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: "claude-3-7-sonnet-20250219-v1"
+          DISABLE_PROMPT_CACHING: "1"
+        run: |
+          # 提取评论反馈作为提示
+          REVIEW_FEEDBACK="${{ steps.pr.outputs.feedback }}"
+
+          # 运行Claude Code处理反馈
+          claude -p "$REVIEW_FEEDBACK" --allowedTools "Bash(git diff:*)" "Bash(git log:*)" Edit
+
+          # 检查是否有更改
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Changes detected, proceeding with commit"
+          else
+            echo "No changes detected"
+            exit 1
+          fi
+
+      # 提交并推送更改
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "Claude Code Bot"
+          git config --global user.email "claude-code-bot@example.com"
+          git add .
+          git commit -m "Update code based on review feedback in PR #${{ steps.pr.outputs.number }}"
+
+          # 使用PAT令牌进行推送
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin ${{ steps.pr.outputs.headRef }}
+
+      # 在PR中添加评论
+      - name: Add comment to PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const prNumber = ${{ steps.pr.outputs.number }};
+            const commentId = ${{ steps.pr.outputs.commentId }};
+
+            // 在PR上添加评论
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `✅ Code updated based on review feedback.`
+            });
+
+            // 对评论添加反应
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: commentId,
+              content: '+1'
+            });
